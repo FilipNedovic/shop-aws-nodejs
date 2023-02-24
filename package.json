@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/FilipNedovic/shop-aws-nodejs/issues"
   },
-  "homepage": "https://github.com/FilipNedovic/shop-aws-nodejs#readme"
+  "homepage": "https://github.com/FilipNedovic/shop-aws-nodejs#readme",
+  "devDependencies": {
+    "serverless-esbuild": "^1.39.0"
+  }
 }
