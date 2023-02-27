@@ -60,13 +60,13 @@ provider:
 
 functions:
   getProductList:
-    handler: handler.getProductList
+    handler: functions/get-product-list/handler.getProductList
     events:
       - http:
           path: products
           method: get
   getProductsById:
-    handler: handler.getProductsById
+    handler: functions/get-product-by-id/handler.getProductById
     events:
       - http:
           path: products/{productId}
