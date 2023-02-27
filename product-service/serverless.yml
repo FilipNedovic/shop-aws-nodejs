@@ -72,8 +72,12 @@ functions:
           path: products/{productId}
           method: get
 plugins:
+  - serverless-auto-swagger
   - serverless-esbuild
 custom:
+  autoswagger:
+    apiType: http
+    generateSwaggerOnDeploy: true
   esbuild:
     bundle: true
     minify: false
