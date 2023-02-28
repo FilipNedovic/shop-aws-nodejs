@@ -1,22 +1,12 @@
 "use strict";
-import { products } from "../../mocks/productsData.js";
-
-const getProduct = (productId) => {
-  return new Promise((resolve) => {
-    resolve(products.find((product) => product.id === productId));
-  });
-};
+import { productService } from "../../services/productService";
 
 export const getProductById = async (event) => {
-  try {
-    const { productId } = event.pathParameters;
-    let product = await getProduct(productId);
+  const { productId } = event.pathParameters;
+  const product = await productService.getProductById(productId);
+  const response = product
+    ? { statusCode: 200, body: JSON.stringify(product) }
+    : { statusCode: 404, body: "Product not found" };
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(product),
-    };
-  } catch {
-    console.error("Product not found");
-  }
+  return response;
 };
