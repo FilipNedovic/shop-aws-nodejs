@@ -22,7 +22,7 @@ frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
 
   # you can overwrite defaults here
   stage: dev
@@ -59,12 +59,28 @@ provider:
 #    - include-me-dir/**
 
 functions:
-  hello:
-    handler: handler.hello
+  getProductList:
+    handler: functions/get-product-list/handler.getProductList
     events:
       - http:
           path: products
           method: get
+  getProductsById:
+    handler: functions/get-product-by-id/handler.getProductById
+    events:
+      - http:
+          path: products/{productId}
+          method: get
+plugins:
+  - serverless-auto-swagger
+  - serverless-esbuild
+custom:
+  autoswagger:
+    apiType: http
+    generateSwaggerOnDeploy: true
+  esbuild:
+    bundle: true
+    minify: false
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
