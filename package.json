@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "fill:products": "powershell ./fillProductsTable.ps1",
+    "fill:stocks": "powershell ./fillStocksTable.ps1"
   },
   "repository": {
     "type": "git",
