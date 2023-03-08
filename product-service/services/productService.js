@@ -6,9 +6,9 @@ const TableName = process.env.PRODUCTS_TABLE;
 
 class ProductService {
   async getProductsList() {
-    const products = await db.scan({ TableName }).promise();
+    const response = await db.scan({ TableName }).promise();
 
-    return products;
+    return response;
   }
 
   async getProductById(productId) {
@@ -24,7 +24,7 @@ class ProductService {
   }
 
   async createProduct(product) {
-    await db
+    const response = await db
       .put({
         TableName,
         Item: {
@@ -36,7 +36,7 @@ class ProductService {
       })
       .promise();
 
-    return product;
+    return response;
   }
 }
 
