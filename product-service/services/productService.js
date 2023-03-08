@@ -1,4 +1,3 @@
-import { products } from "../mocks/productsData";
 import AWS from "aws-sdk";
 
 const db = new AWS.DynamoDB.DocumentClient();
@@ -7,18 +6,21 @@ const TableName = process.env.TABLE_NAME;
 
 class ProductService {
   async getProductsList() {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(products), 1000);
-    });
+    const products = await db.scan({ TableName }).promise();
+
+    return products;
   }
 
   async getProductById(productId) {
-    return new Promise((resolve) => {
-      setTimeout(
-        () => resolve(products.find(({ id }) => id === productId)),
-        150
-      );
-    });
+    const product = await db
+      .query({
+        TableName,
+        KeyConditionExpression: "id = :id",
+        ExpressionAttributeValues: { ":id": productId },
+      })
+      .promise();
+
+    return product;
   }
 
   async createProduct(product) {
