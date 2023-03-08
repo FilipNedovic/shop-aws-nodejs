@@ -2,7 +2,7 @@ import AWS from "aws-sdk";
 
 const db = new AWS.DynamoDB.DocumentClient();
 const crypto = require("crypto");
-const TableName = process.env.TABLE_NAME;
+const TableName = process.env.PRODUCTS_TABLE;
 
 class ProductService {
   async getProductsList() {

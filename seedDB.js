@@ -8,7 +8,7 @@ const attr = require("dynamodb-data-types").AttributeValue;
 const dbclient = new DynamoDBClient({ region: process.env.REGION });
 const fs = require("fs");
 
-const insertToDynamoTable = async function (json) {
+const insertToDynamoTable = async function (json, table) {
   try {
     let dynamoDBRecords = getDynamoDBRecords(json);
     var batches = [];
@@ -17,18 +17,18 @@ const insertToDynamoTable = async function (json) {
       batches.push(dynamoDBRecords.splice(0, 25));
     }
 
-    await callDynamoDBInsert(batches);
+    await callDynamoDBInsert(batches, table);
   } catch (error) {
     console.error(error);
     return error;
   }
 };
 
-const callDynamoDBInsert = async function (batches) {
+const callDynamoDBInsert = async function (batches, table) {
   return Promise.all(
     batches.map(async (batch) => {
       requestItems = {};
-      requestItems[process.env.PRODUCTS_TABLE] = batch;
+      requestItems[table] = batch;
 
       let params = {
         RequestItems: requestItems,
@@ -58,14 +58,20 @@ const run = async () => {
 
   products.map((product) => {
     stocks.filter((stock) => {
-      stock.id === product.id ? (product.count = stock.count) : null;
+      stock.product_id === product.id ? (product.count = stock.count) : null;
     });
   });
   try {
-    await insertToDynamoTable(products);
-    console.log(`Successfully inserted items to ${process.env.PRODUCTS_TABLE}`);
+    await insertToDynamoTable(stocks, process.env.STOCKS_TABLE).then(() =>
+      console.log(`Successfully inserted items to ${process.env.STOCKS_TABLE}`)
+    );
+    await insertToDynamoTable(products, process.env.PRODUCTS_TABLE).then(() =>
+      console.log(
+        `Successfully inserted items to ${process.env.PRODUCTS_TABLE}`
+      )
+    );
   } catch (err) {
-    console.error("Error", err);
+    console.error(`Error: ${err}`);
   }
 };
 
