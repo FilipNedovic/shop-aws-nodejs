@@ -22,8 +22,10 @@ frameworkVersion: "3"
 
 provider:
   environment:
-    TABLE_NAME:
-      Ref: productsTable
+    PRODUCTS_TABLE:
+      Ref: products
+    STOCKS_TABLE:
+      Ref: stocks
   name: aws
   runtime: nodejs14.x
 
@@ -44,7 +46,8 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - "Fn::GetAtt": [productsTable, Arn]
+            - "Fn::GetAtt": [products, Arn]
+            - "Fn::GetAtt": [stocks, Arn]
 #          Action:
 #            - "s3:ListBucket"
 #          Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
@@ -142,15 +145,28 @@ custom:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-    productsTable:
+    products:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: productsTable
+        TableName: products
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
         KeySchema:
           - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    stocks:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: stocks
+        AttributeDefinitions:
+          - AttributeName: product_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: product_id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
