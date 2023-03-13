@@ -39,5 +39,4 @@ functions:
             - prefix: "uploaded/"
           existing: true
 plugins:
-  - serverless-auto-swagger
   - serverless-esbuild
