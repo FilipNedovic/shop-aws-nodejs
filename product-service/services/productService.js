@@ -8,7 +8,7 @@ class ProductService {
   async getProductsList() {
     const response = await db.scan({ TableName }).promise();
 
-    return response;
+    return response.Items;
   }
 
   async getProductById(productId) {
