@@ -1,9 +1,14 @@
 "use strict";
+import { SendMessageCommand } from "@aws-sdk/client-sqs";
+import { sqsClient } from "./libs/sqsClient";
+
 const AWS = require("aws-sdk");
 const s3 = new AWS.S3();
 const csvParser = require("csv-parser");
 
 const BUCKET_NAME = "shop-aws-nodejs";
+const QUEUE_URL =
+  "https://sqs.us-east-1.amazonaws.com/773707999966/catalogItemsQueue";
 const response = {
   headers: {
     "Access-Control-Allow-Origin": "*",
@@ -37,6 +42,7 @@ export const importProductsFile = async (event) => {
 };
 
 export const importFileParser = async (event) => {
+  let response;
   const { Records } = event;
 
   try {
@@ -49,14 +55,29 @@ export const importFileParser = async (event) => {
 
       await new Promise((resolve, reject) => {
         const readStream = s3.getObject(params).createReadStream();
-
         readStream
           .pipe(csvParser())
-          .on("data", (data) => {
-            console.log("Data:\n", data);
+          .on("data", async (data) => {
+            const messageParams = {
+              DelaySeconds: 0,
+              MessageBody: JSON.stringify(data),
+              QueueUrl: QUEUE_URL,
+            };
+
+            const messageData = await sqsClient.send(
+              new SendMessageCommand(messageParams)
+            );
+            const bodyMessage = "message sent to SQS" + messageData.MessageId;
+            response = {
+              statusCode: 201,
+              body: JSON.stringify(bodyMessage),
+              headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": true,
+              },
+            };
           })
           .on("error", (error) => {
-            console.error(`Error:\n`, error);
             reject(error);
           })
           .on("end", async () => {
@@ -78,6 +99,8 @@ export const importFileParser = async (event) => {
           });
       });
     }
+
+    return response;
   } catch (error) {
     console.log("Error:\n", error);
   }

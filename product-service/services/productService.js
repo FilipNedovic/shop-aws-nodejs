@@ -32,6 +32,7 @@ class ProductService {
           title: product.title,
           description: product.description,
           price: product.price,
+          count: product.count ? product.count : null,
         },
       })
       .promise();
