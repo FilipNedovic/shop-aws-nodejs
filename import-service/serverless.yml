@@ -17,6 +17,11 @@ provider:
             - "s3:*"
           Resource:
             - "arn:aws:s3:::shop-aws-nodejs/*"
+        - Effect: "Allow"
+          Resource:
+            - "arn:aws:sqs:us-east-1:773707999966:catalogItemsQueue"
+          Action:
+            - "sqs:*"
 functions:
   importProductsFile:
     handler: handler.importProductsFile
@@ -40,3 +45,7 @@ functions:
           existing: true
 plugins:
   - serverless-esbuild
+custom:
+  esbuild:
+    bundle: true
+    minify: false

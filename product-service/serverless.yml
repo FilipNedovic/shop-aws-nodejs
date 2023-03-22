@@ -26,6 +26,8 @@ provider:
       Ref: products
     STOCKS_TABLE:
       Ref: stocks
+    QUEUE:
+      Ref: catalogItemsQueue
   name: aws
   runtime: nodejs14.x
 
@@ -48,6 +50,11 @@ provider:
           Resource:
             - "Fn::GetAtt": [products, Arn]
             - "Fn::GetAtt": [stocks, Arn]
+        - Effect: "Allow"
+          Action:
+            - sqs:*
+          Resource:
+            - "Fn::GetAtt": [catalogItemsQueue, Arn]
 #          Action:
 #            - "s3:ListBucket"
 #          Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
@@ -92,6 +99,15 @@ functions:
       - http:
           path: products
           method: POST
+  catalogBatchProcess:
+    handler: functions/catalog-batch-process/handler.catalogBatchProcess
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - catalogItemsQueue
+              - Arn
+          batchSize: 5
 plugins:
   - serverless-auto-swagger
   - serverless-esbuild
@@ -171,6 +187,10 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+    catalogItemsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: catalogItemsQueue
 #  Resources:
 #    NewResource:
 #      Type: AWS::S3::Bucket
