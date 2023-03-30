@@ -25,9 +25,12 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.284.0",
+    "aws-sdk": "^2.1333.0",
+    "csv-parser": "^3.0.0",
     "dotenv": "^16.0.3",
     "dynamodb-data-types": "^4.0.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^4.6.1"
+    "swagger-ui-express": "^4.6.1",
+    "yup": "^1.0.2"
   }
 }
