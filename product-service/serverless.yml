@@ -21,18 +21,33 @@ service: products-service
 frameworkVersion: "3"
 
 provider:
+  environment:
+    PRODUCTS_TABLE:
+      Ref: products
+    STOCKS_TABLE:
+      Ref: stocks
   name: aws
   runtime: nodejs14.x
 
   # you can overwrite defaults here
   stage: dev
   region: us-east-1
-
-# you can add statements to the Lambda function's IAM Role here
-#  iam:
-#    role:
-#      statements:
-#        - Effect: "Allow"
+  # you can add statements to the Lambda function's IAM Role here
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - dynamodb:DescribeTable
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - "Fn::GetAtt": [products, Arn]
+            - "Fn::GetAtt": [stocks, Arn]
 #          Action:
 #            - "s3:ListBucket"
 #          Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
@@ -71,6 +86,12 @@ functions:
       - http:
           path: products/{productId}
           method: get
+  createProduct:
+    handler: functions/create-product/handler.createProduct
+    events:
+      - http:
+          path: products
+          method: POST
 plugins:
   - serverless-auto-swagger
   - serverless-esbuild
@@ -122,7 +143,34 @@ custom:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
+resources:
+  Resources:
+    products:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: products
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    stocks:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: stocks
+        AttributeDefinitions:
+          - AttributeName: product_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: product_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
 #  Resources:
 #    NewResource:
 #      Type: AWS::S3::Bucket
