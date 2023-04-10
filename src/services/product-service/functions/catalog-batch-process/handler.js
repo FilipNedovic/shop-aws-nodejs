@@ -1,17 +1,17 @@
 "use strict";
-import { productService } from "../../services/productService";
-import { snsClient } from "../../../import-service/libs/snsClient";
+import { productService } from "../../productService";
+import { snsClient } from "../../../../libs";
+
+let response = {
+  statusCode: 201,
+  headers: {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Credentials": true,
+  },
+  messages: [],
+};
 
 export const catalogBatchProcess = async (event) => {
-  let response = {
-    statusCode: 201,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Credentials": true,
-    },
-    messages: [],
-  };
-
   const { Records } = event;
 
   for (const record of Records) {

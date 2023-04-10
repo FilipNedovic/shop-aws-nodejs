@@ -1,5 +1,6 @@
 service: import-service
 frameworkVersion: "3"
+useDotenv: true
 provider:
   name: aws
   runtime: nodejs14.x
@@ -18,10 +19,10 @@ provider:
           Resource:
             - "arn:aws:s3:::shop-aws-nodejs/*"
         - Effect: "Allow"
-          Resource:
-            - "arn:aws:sqs:us-east-1:773707999966:catalogItemsQueue"
           Action:
             - "sqs:*"
+          Resource:
+            - "arn:aws:sqs:us-east-1:773707999966:catalogItemsQueue"
 functions:
   importProductsFile:
     handler: handler.importProductsFile
@@ -44,8 +45,13 @@ functions:
             - prefix: "uploaded/"
           existing: true
 plugins:
+  - serverless-auto-swagger
   - serverless-esbuild
+  - serverless-dotenv-plugin
 custom:
+  autoswagger:
+    apiType: http
+    generateSwaggerOnDeploy: true
   esbuild:
     bundle: true
     minify: false

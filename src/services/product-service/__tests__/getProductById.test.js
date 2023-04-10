@@ -1,4 +1,4 @@
-import { getProductById } from "../get-product-by-id/handler";
+import { getProductById } from "../functions/get-product-by-id/handler";
 import { products } from "../mocks/productsData";
 
 describe("single product tests", () => {

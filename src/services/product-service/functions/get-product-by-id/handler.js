@@ -1,5 +1,5 @@
 "use strict";
-import { productService } from "../../services/productService";
+import { productService } from "../../productService";
 
 export const getProductById = async (event) => {
   const { productId } = event.pathParameters;
