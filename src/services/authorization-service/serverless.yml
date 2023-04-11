@@ -1,0 +1,22 @@
+service: authorization-service
+frameworkVersion: "3"
+useDotenv: true
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-1
+functions:
+  hello:
+    handler: handler.basicAuthorizer
+plugins:
+  - serverless-auto-swagger
+  - serverless-esbuild
+  - serverless-dotenv-plugin
+custom:
+  autoswagger:
+    apiType: http
+    generateSwaggerOnDeploy: true
+  esbuild:
+    bundle: true
+    minify: false
