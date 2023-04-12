@@ -1,18 +1,38 @@
-'use strict';
+"use strict";
 
-module.exports.hello = async (event) => {
+export const basicAuthorizer = async (event) => {
+  const { authorizationToken } = event;
+  const decodedToken = JSON.parse(
+    Buffer.from(authorizationToken.split(".")[1], "base64").toString()
+  );
+
+  const username = Object.keys(decodedToken).toString();
+  const password = Object.values(decodedToken).toString();
+
+  const envPassword = process.env[username];
+  const effect = !envPassword || envPassword !== password ? "Deny" : "Allow";
+
+  try {
+    const policy = generatePolicy(authorizationToken, event.methodArn, effect);
+
+    return policy;
+  } catch (error) {
+    console.error("Error in basicAuthorizer: ", error);
+  }
+};
+
+export const generatePolicy = (principalId, resourceArn, effect = "Deny") => {
   return {
-    statusCode: 200,
-    body: JSON.stringify(
-      {
-        message: 'Go Serverless v1.0! Your function executed successfully!',
-        input: event,
-      },
-      null,
-      2
-    ),
+    principalId: principalId,
+    policyDocument: {
+      Version: "2008-10-17",
+      Statement: [
+        {
+          Action: "execute-api:Invoke",
+          Effect: effect,
+          Resource: resourceArn,
+        },
+      ],
+    },
   };
-
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // return { message: 'Go Serverless v1.0! Your function executed successfully!', event };
 };
