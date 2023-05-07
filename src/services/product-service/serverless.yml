@@ -1,0 +1,147 @@
+service: products-service
+frameworkVersion: "3"
+useDotenv: true
+provider:
+  environment:
+    PRODUCTS_TABLE:
+      Ref: products
+    STOCKS_TABLE:
+      Ref: stocks
+    QUEUE:
+      Ref: catalogItemsQueue
+    SNS:
+      Ref: createProductTopic
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - dynamodb:DescribeTable
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - "Fn::GetAtt": [products, Arn]
+            - "Fn::GetAtt": [stocks, Arn]
+        - Effect: "Allow"
+          Action:
+            - sqs:*
+          Resource:
+            - "Fn::GetAtt": [catalogItemsQueue, Arn]
+        - Effect: Allow
+          Action:
+            - sns:Publish
+            - sns:Subscribe
+            - sns:CreateTopic
+            - sns:GetTopicAttributes
+            - sns:SetTopicAttributes
+            - sns:TagResource
+            - sns:UntagResource
+            - sns:ListTagsForResource
+            - sns:ListSubscriptionsByTopic
+          Resource: [{ "Ref": "createProductTopic" }]
+functions:
+  getProductList:
+    handler: functions/get-product-list/handler.getProductList
+    events:
+      - http:
+          path: products
+          method: get
+          cors: true
+  getProductsById:
+    handler: functions/get-product-by-id/handler.getProductById
+    events:
+      - http:
+          path: products/{productId}
+          method: get
+          cors: true
+  createProduct:
+    handler: functions/create-product/handler.createProduct
+    events:
+      - http:
+          path: products
+          method: POST
+          cors: true
+  catalogBatchProcess:
+    handler: functions/catalog-batch-process/handler.catalogBatchProcess
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - catalogItemsQueue
+              - Arn
+          batchSize: 5
+plugins:
+  - serverless-auto-swagger
+  - serverless-esbuild
+  - serverless-dotenv-plugin
+custom:
+  autoswagger:
+    apiType: http
+    generateSwaggerOnDeploy: true
+  esbuild:
+    bundle: true
+    minify: false
+resources:
+  Resources:
+    products:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: products
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    stocks:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: stocks
+        AttributeDefinitions:
+          - AttributeName: product_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: product_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    catalogItemsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: catalogItemsQueue
+    createProductTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: createProductTopic
+        Subscription:
+          - Protocol: SQS
+            Endpoint:
+              {
+                "Fn::Join":
+                  [
+                    "",
+                    [
+                      "arn:aws:sqs:${self:provider.region}:",
+                      { "Ref": "AWS::AccountId" },
+                      ":${self:resources.Resources.catalogItemsQueue.Properties.QueueName}",
+                    ],
+                  ],
+              }
+    createProductSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: nedovic.filip@gmail.com
+        Protocol: email
+        TopicArn: { "Ref": "createProductTopic" }

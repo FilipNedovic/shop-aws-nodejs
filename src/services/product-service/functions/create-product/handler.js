@@ -1,4 +1,4 @@
-import { productService } from "../../services/productService";
+import { productService } from "../../productService";
 
 export const createProduct = async (event) => {
   const product = JSON.parse(event.body);

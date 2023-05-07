@@ -1,4 +1,4 @@
-import { getProductList } from "../get-product-by-id/handler";
+import { getProductList } from "../functions/get-product-by-id/handler";
 
 describe("product list tests", () => {
   let response;

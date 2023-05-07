@@ -1,5 +1,5 @@
 "use strict";
-import { productService } from "../../services/productService";
+import { productService } from "../../productService";
 
 export const getProductList = async () => {
   const products = await productService.getProductsList();

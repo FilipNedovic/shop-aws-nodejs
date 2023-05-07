@@ -1,12 +1,15 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+import { BatchWriteItemCommand } from "@aws-sdk/client-dynamodb";
+import AttributeValue from "dynamodb-data-types/lib/AttributeValue.js";
+import { dynamoDbClient } from "../libs";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const {
-  DynamoDBClient,
-  BatchWriteItemCommand,
-} = require("@aws-sdk/client-dynamodb");
-const attr = require("dynamodb-data-types").AttributeValue;
-const dbclient = new DynamoDBClient({ region: process.env.REGION });
-const fs = require("fs");
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const insertToDynamoTable = async function (json, table) {
   try {
@@ -27,21 +30,21 @@ const insertToDynamoTable = async function (json, table) {
 const callDynamoDBInsert = async function (batches, table) {
   return Promise.all(
     batches.map(async (batch) => {
-      requestItems = {};
+      let requestItems = {};
       requestItems[table] = batch;
 
       let params = {
         RequestItems: requestItems,
       };
 
-      await dbclient.send(new BatchWriteItemCommand(params));
+      await dynamoDbClient.send(new BatchWriteItemCommand(params));
     })
   );
 };
 
 const getDynamoDBRecords = function (data) {
   let dynamoDBRecords = data.map((entity) => {
-    entity = attr.wrap(entity);
+    entity = AttributeValue.wrap(entity);
     let dynamoRecord = Object.assign({ PutRequest: { Item: entity } });
 
     return dynamoRecord;
@@ -52,9 +55,11 @@ const getDynamoDBRecords = function (data) {
 
 const run = async () => {
   let products = JSON.parse(
-    fs.readFileSync("product-service/mocks/products.json")
+    fs.readFileSync(path.join(__dirname, "..", "mocks", "products.json"))
   );
-  let stocks = JSON.parse(fs.readFileSync("product-service/mocks/stocks.json"));
+  let stocks = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "..", "mocks", "stocks.json"))
+  );
 
   products.map((product) => {
     stocks.filter((stock) => {

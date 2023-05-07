@@ -1,18 +1,17 @@
-import AWS from "aws-sdk";
+import { dynamoDbDocumentClient } from "../../libs/dynamoDbClient";
 
-const db = new AWS.DynamoDB.DocumentClient();
 const crypto = require("crypto");
 const TableName = process.env.PRODUCTS_TABLE;
 
 class ProductService {
   async getProductsList() {
-    const response = await db.scan({ TableName }).promise();
+    const response = await dynamoDbDocumentClient.scan({ TableName }).promise();
 
     return response.Items;
   }
 
   async getProductById(productId) {
-    const product = await db
+    const product = await dynamoDbDocumentClient
       .query({
         TableName,
         KeyConditionExpression: "id = :id",
@@ -24,7 +23,7 @@ class ProductService {
   }
 
   async createProduct(product) {
-    const response = await db
+    const response = await dynamoDbDocumentClient
       .put({
         TableName,
         Item: {
@@ -32,6 +31,7 @@ class ProductService {
           title: product.title,
           description: product.description,
           price: product.price,
+          count: product.count ? product.count : null,
         },
       })
       .promise();
