@@ -1,0 +1,18 @@
+service: authorization-service
+frameworkVersion: "3"
+useDotenv: true
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-1
+functions:
+  basicAuthorizer:
+    handler: handler.basicAuthorizer
+plugins:
+  - serverless-esbuild
+  - serverless-dotenv-plugin
+custom:
+  esbuild:
+    bundle: true
+    minify: false
